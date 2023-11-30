@@ -7,5 +7,3 @@ asi como el registro y listado de las ordenes que los clientes soliciten
 > HTML\
 > JavaScript\
 > Python 3.11.4\
-## Disenio de Database
-<image src="/printstore/images/Diagrama de clases.jpg">
