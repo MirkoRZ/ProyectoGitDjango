@@ -9,11 +9,12 @@
     <nav>
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/productos">Productos</a></li>
+            
             <li><a href="/signup">Signup</a></li>
             <li><a href="/signin">Sigin</a></li>
             {% if user.is_authenticated %}
-                <li><a href="/logout">LogOut</a></li>
+            <li><a href="/productos">Productos</a></li>
+            <li><a href="/logout">LogOut</a></li>
             {% endif %}
         </ul>
     </nav>

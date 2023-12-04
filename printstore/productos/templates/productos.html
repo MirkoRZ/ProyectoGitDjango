@@ -2,4 +2,9 @@
 {% block content %}
 <h1>PRODUCTOS</h1>
 <h3>Fecha actual: {{fecha}}</h3>
+<ul>
+    {% for p in productos %}
+    <li>{{p.nombre}}-{{p.descripcion}}</li>
+    {% endfor %}
+</ul>
 {% endblock %}

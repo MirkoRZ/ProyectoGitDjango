@@ -25,5 +25,6 @@ urlpatterns = [
     path('signup/',views.signup),
     path('logout/',views.signout,name='logout'),
     path('signin/',views.signin),
-    path('productos/create/',views.create_producto,name="create_producto")
+    path('productos/create/',views.create_producto,name="create_producto"),
+    path('productos/create/<int:producto_id>',views.create_especificacion,name="create_especificacion")
 ]

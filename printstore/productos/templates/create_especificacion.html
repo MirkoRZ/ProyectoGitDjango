@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Crear especificacion al Producto "{{producto.nombre}}"</h1>
+{{error}}
+<form action="/productos/create/{{producto.id}}" method="POST">
+    {% csrf_token %}
+    {{formCreateEspecificacion.as_p}}
+    <br>
+    <button>Registrar Especificacion</button>
+    <ul>
+        {% for e in especificaciones %}
+        <li>{{e.nombre}}-{{e.tipo_valor}}</li>
+        {% endfor %}
+    </ul>
+</form>
+{% endblock %}

@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Crear Producto</h1>
+{{error}}
 <form action="/productos/create/" method="POST">
+    {% csrf_token %}
     {{formCreateProducto.as_p}}
+    <br>
+    <button>Registrar Producto</button>
 </form>
 {% endblock %}

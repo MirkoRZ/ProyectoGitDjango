@@ -7,8 +7,10 @@ class Producto(models.Model):
     precio = models.DecimalField(max_digits=4, decimal_places=2)
 
 class Especificacion(models.Model):
+    TIPOS_VALOR = [('booleano',"Si o No"),('int',"Entero"),('string',"Cadena de texto")]
+
     nombre = models.CharField(max_length=100)
-    tipo_valor = models.CharField(max_length=20)
+    tipo_valor = models.CharField(max_length=200,choices=TIPOS_VALOR)
 
 class ProductoEspecificacion(models.Model):
     fk_id_producto = models.ForeignKey(Producto,on_delete=models.CASCADE)
