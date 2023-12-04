@@ -6,4 +6,4 @@ asi como el registro y listado de las ordenes que los clientes soliciten
 > Django Framework\
 > HTML\
 > JavaScript\
-> Python 3.11.4\
+> Python 3.11.4

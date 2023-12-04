@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Crear Producto</h1>
+<form action="/productos/create/" method="POST">
+    {{formCreateProducto.as_p}}
+</form>
+{% endblock %}
