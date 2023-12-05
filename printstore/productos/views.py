@@ -7,6 +7,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login,logout,authenticate
 from .forms import *
 from .models import *
+from django.core.serializers import serialize
+from django.http import JsonResponse
+
 # Create your views here.
 def Home(request):
     return render(request,'home.html')
@@ -67,40 +70,69 @@ def create_opcion(request,producto_id,especificacion_id):
             'id_producto':producto_id,
             'opciones':opciones})
     else:
-       if not(request.POST['nombre'] is None or request.POST['valor'] is None):
-         nueva_opcion = OpcionForm(request.POST).save()        
+        if not(request.POST['nombre'] is None or request.POST['valor'] is None):
+            nueva_opcion = OpcionForm(request.POST).save()        
+            OpcionEspecificacion.objects.create(fk_id_opcion=nueva_opcion,fk_id_especificacion=especificacionActual)
 
-         OpcionEspecificacion.objects.create(fk_id_opcion=nueva_opcion,fk_id_especificacion=especificacionActual)
-
-         return render(request,'create_opcion.html',{
-                'formCreateOpcion':OpcionForm,
-                'especificacion':especificacionActual,
-                'id_producto':producto_id,
-                'opciones':opciones})
-
-def create_opcion_numerica(request,producto_id,especificacion_id):
-    negativos = bool(int(request.POST['valor_minimo'])< 1 or int(request.POST['valor_maximo']) < 1 or int(request.POST['intervalo']) < 1)
-    repetido = bool(OpcionNumerica.objects.filter(valor_minimo=int(request.POST['valor_minimo']),valor_maximo=int(request.POST['valor_maximo']),intervalo=int(request.POST['intervalo'])).count()>0)
-    especificacionActual = Especificacion.objects.get(id=especificacion_id)
-    lstOpcionesEsp = list(OpcionNumericaEspecificacion.objects.filter(fk_id_especificacion=especificacionActual.id).values_list('fk_id_opcion_numerica', flat=True))
-    opciones = OpcionNumerica.objects.filter(id__in=lstOpcionesEsp)
-
-    if request.method == 'GET':
         return render(request,'create_opcion.html',{
-            'formCreateOpcionNumerica':OpcionNumericaForm,
+            'formCreateOpcion':OpcionForm,
             'especificacion':especificacionActual,
             'id_producto':producto_id,
             'opciones':opciones})
-    else:
-        if not(negativos or repetido):
-            nueva_opcion = OpcionNumericaForm(request.POST).save()        
-            OpcionNumericaEspecificacion.objects.create(fk_id_opcion_numerica=nueva_opcion,fk_id_especificacion=especificacionActual)
 
-        return render(request,'create_opcion.html',{
-        'formCreateOpcionNumerica':OpcionNumericaForm,
-        'especificacion':especificacionActual,
-        'id_producto':producto_id,
-        'opciones':opciones})
+def create_opcion_numerica(request,producto_id,especificacion_id):
+    especificacionActual = Especificacion.objects.get(id=especificacion_id)
+    opNumEsp = OpcionNumericaEspecificacion.objects.filter(fk_id_especificacion=especificacion_id).first()
+
+    try:
+        opcionEspecificacion = OpcionNumericaEspecificacion.objects.filter(fk_id_especificacion = especificacion_id).values_list('fk_id_opcion_numerica', flat=True)
+        print(opcionEspecificacion)
+        opciones = OpcionNumerica.objects.get(id = opcionEspecificacion[0]) if opcionEspecificacion else None
+
+        if request.method == 'GET':
+            return render(request,'create_opcion.html',{
+                'formCreateOpcionNumerica':OpcionNumericaForm,
+                'especificacion':especificacionActual,
+                'id_producto':producto_id,
+                'opciones':opciones})
+        else:
+            valor_minimo = int(request.POST['valor_minimo'])
+            valor_maximo = int(request.POST['valor_maximo'])
+            intervalo = int(request.POST['intervalo'])
+
+            negativos = valor_minimo < 1 or valor_maximo < 1 or intervalo < 1
+            intervaloCorrecto= intervalo<(valor_maximo-valor_minimo) and  (valor_maximo-valor_minimo)%intervalo==0
+            repetido = bool(OpcionNumerica.objects.filter(valor_minimo=valor_minimo, valor_maximo=valor_maximo, intervalo=intervalo).count() > 0)
+            if not(negativos or repetido):
+                nueva_opcion = OpcionNumericaForm(request.POST).save()        
+                if opNumEsp is None:
+                    OpcionNumericaEspecificacion.objects.create(fk_id_opcion_numerica=nueva_opcion,fk_id_especificacion=especificacionActual)
+                else:
+                    opNumEsp.fk_id_opcion_numerica = nueva_opcion
+
+            elif repetido:
+                opNumEncontrada = OpcionNumerica.objects.filter(valor_minimo=valor_minimo, valor_maximo=valor_maximo, intervalo=intervalo).first()
+                if not(opNumEsp is None):
+                    opNumEsp = OpcionNumericaEspecificacion.objects.get(id=opNumEsp.id)
+                    opNumEsp.fk_id_opcion_numerica = opNumEncontrada if opNumEncontrada else None
+                    opNumEsp.save()
+                    return render(request,'create_opcion.html',{
+                    'formCreateOpcionNumerica':OpcionNumericaForm,
+                    'especificacion':especificacionActual,
+                    'id_producto':producto_id,
+                    'opciones':opNumEncontrada})
+
+            elif not(intervaloCorrecto):
+                return render(request,'create_opcion.html',{
+                'formCreateOpcionNumerica':OpcionNumericaForm,
+                'especificacion':especificacionActual,
+                'id_producto':producto_id,
+                'opciones':opciones, 'error':"Intervalo incorrecto"})
+
+            
+    except Exception as ex:
+        return HttpResponse(f"Ocurrio un error:{ex.__str__()}")
+    
 
 def signup(request):
     if request.method == 'GET':
