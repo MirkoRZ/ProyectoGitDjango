@@ -26,5 +26,7 @@ urlpatterns = [
     path('logout/',views.signout,name='logout'),
     path('signin/',views.signin),
     path('productos/create/',views.create_producto,name="create_producto"),
-    path('productos/create/<int:producto_id>',views.create_especificacion,name="create_especificacion")
+    path('productos/create/<int:producto_id>',views.create_especificacion,name="create_especificacion"),
+    path('productos/create/<int:producto_id>/especificacion/<int:especificacion_id>',views.create_opcion,name="create_opcion"),
+    path('productos/create/<int:producto_id>/especificacion-numerica/<int:especificacion_id>',views.create_opcion_numerica,name="create_opcion_numerica")
 ]

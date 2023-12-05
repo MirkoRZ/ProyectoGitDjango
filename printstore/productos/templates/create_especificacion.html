@@ -9,7 +9,15 @@
     <button>Registrar Especificacion</button>
     <ul>
         {% for e in especificaciones %}
-        <li>{{e.nombre}}-{{e.tipo_valor}}</li>
+            {% if e.tipo_valor == "booleano" %}
+                <li>{{e.nombre}}-{{e.tipo_valor}}</li>
+            {% elif e.tipo_valor == "string" %}
+                <li>{{e.nombre}}-{{e.tipo_valor}} <button><a href="{{producto.id}}/especificacion/{{e.id}}">Agregar opciones!</a></button></li>
+            {% else %}
+                <li>{{e.nombre}}-{{e.tipo_valor}} <button><a href="{{producto.id}}/especificacion-numerica/{{e.id}}">Asignar intervalo de opciones!</a></button></li>
+        {% endif %}
+
+       
         {% endfor %}
     </ul>
 </form>

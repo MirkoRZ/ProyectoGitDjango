@@ -23,4 +23,14 @@ class OpcionForm(ModelForm):
     class Meta:
         model = Opcion
         fields = ['nombre','valor']
+
+class OpcionNumericaForm(ModelForm):
+    class Meta:
+        model = OpcionNumerica
+        fields = ['valor_minimo','valor_maximo','intervalo']
+        widgets = {
+            'valor_minimo': forms.NumberInput(attrs={'type': 'number', 'step': '1','value':'1'}),
+            'valor_maximo': forms.NumberInput(attrs={'type': 'number', 'step': '1','value':'2'}),
+            'intervalo': forms.NumberInput(attrs={'type': 'number', 'step': '1','value':'1'}),
+        }
         

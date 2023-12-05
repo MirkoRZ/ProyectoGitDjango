@@ -4,7 +4,7 @@
 <h3>Fecha actual: {{fecha}}</h3>
 <ul>
     {% for p in productos %}
-    <li>{{p.nombre}}-{{p.descripcion}}</li>
+    <li>{{p.nombre}}-{{p.descripcion}} <button><a href="create/{{p.id}}">Agregar Especificaciones unicas</a></button></li>
     {% endfor %}
 </ul>
 {% endblock %}
