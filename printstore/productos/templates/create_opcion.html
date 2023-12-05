@@ -22,7 +22,14 @@
         {% csrf_token %}
         {{formCreateOpcionNumerica.as_p}}
         <br>
-        <span>{{opciones.valor_minimo}}-{{opciones.valor_maximo}} con un salto de {{opciones.intervalo}}</span><br><br>
+        <span>{{opcionNum.valor_minimo}}-{{opcionNum.valor_maximo}} con un salto de {{opcionNum.intervalo}}</span><br>
+        {% if opcionNum %}
+            <ul>
+                {% for i in numeros %}
+                    <li>{{ i }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         <button>Registrar intervalo de opciones</button><br><br>
     </form>
 {% endif %}

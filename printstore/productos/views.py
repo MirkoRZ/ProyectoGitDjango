@@ -88,18 +88,20 @@ def create_opcion_numerica(request,producto_id,especificacion_id):
         opcionEspecificacion = OpcionNumericaEspecificacion.objects.filter(fk_id_especificacion = especificacion_id).values_list('fk_id_opcion_numerica', flat=True)
         print(opcionEspecificacion)
         opciones = OpcionNumerica.objects.get(id = opcionEspecificacion[0]) if opcionEspecificacion else None
+        numeros = list(range(opciones.valor_minimo, opciones.valor_maximo + 1,opciones.intervalo))
 
         if request.method == 'GET':
             return render(request,'create_opcion.html',{
                 'formCreateOpcionNumerica':OpcionNumericaForm,
                 'especificacion':especificacionActual,
                 'id_producto':producto_id,
-                'opciones':opciones})
+                'opcionNum':opciones,
+                'numeros':numeros})
         else:
             valor_minimo = int(request.POST['valor_minimo'])
             valor_maximo = int(request.POST['valor_maximo'])
             intervalo = int(request.POST['intervalo'])
-
+            numeros = list(range(valor_minimo, valor_maximo + 1,intervalo))
             negativos = valor_minimo < 1 or valor_maximo < 1 or intervalo < 1
             intervaloCorrecto= intervalo<(valor_maximo-valor_minimo) and  (valor_maximo-valor_minimo)%intervalo==0
             repetido = bool(OpcionNumerica.objects.filter(valor_minimo=valor_minimo, valor_maximo=valor_maximo, intervalo=intervalo).count() > 0)
@@ -120,14 +122,16 @@ def create_opcion_numerica(request,producto_id,especificacion_id):
                     'formCreateOpcionNumerica':OpcionNumericaForm,
                     'especificacion':especificacionActual,
                     'id_producto':producto_id,
-                    'opciones':opNumEncontrada})
+                    'opcionNum':opNumEncontrada,
+                    'numeros':numeros})
 
             elif not(intervaloCorrecto):
                 return render(request,'create_opcion.html',{
                 'formCreateOpcionNumerica':OpcionNumericaForm,
                 'especificacion':especificacionActual,
                 'id_producto':producto_id,
-                'opciones':opciones, 'error':"Intervalo incorrecto"})
+                'opcionNum':opciones,
+                'numeros':numeros, 'error':"Intervalo incorrecto"})
 
             
     except Exception as ex:
