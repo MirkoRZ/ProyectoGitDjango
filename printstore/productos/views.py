@@ -16,7 +16,9 @@ def Home(request):
 def Productos(request):
     fecha_actual = datetime.datetime.now()
     productosLST = Producto.objects.all()
-    return render(request,'productos.html',{'fecha':fecha_actual,'productos':productosLST})
+    productoEspecificacionLST = ProductoEspecificacion.objects.all()
+    especificacionesLST = Especificacion.objects.all()
+    return render(request,'productos.html',{'fecha':fecha_actual,'productos':productosLST,'productoEspecificaciones':productoEspecificacionLST,'especificaciones':especificacionesLST})
 
 def create_producto(request):
     if request.method =='GET':
@@ -33,7 +35,7 @@ def create_producto(request):
                 print(Producto.objects.all())
                 print(Especificacion.objects.all())
 
-                return redirect(f'/productos/create/{producto_id}')
+                return redirect(f'/productos/create/{producto_id}') #Aniadir Especificacion
         except Exception as ex:
             return render(request,'create_producto.html',{
                 'formCreateProducto':ProductoForm,

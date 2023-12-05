@@ -2,9 +2,24 @@
 {% block content %}
 <h1>PRODUCTOS</h1>
 <h3>Fecha actual: {{fecha}}</h3>
-<ul>
+<button><a href="/productos/create">Registrar Producto</a></button>
     {% for p in productos %}
-    <li>{{p.nombre}}-{{p.descripcion}} <button><a href="create/{{p.id}}">Agregar Especificaciones unicas</a></button></li>
+    <details>
+        <summary>{{p.nombre}}</summary>
+        <p>{{p.descripcion}}</p>
+        <ul>
+            {% for pe in productoEspecificaciones %}
+                {% if pe and pe.fk_id_producto.id == p.id %}
+                    {% for e in especificaciones %}
+                        {% if e.id == pe.fk_id_especificacion.id %}
+                            <li>{{e.nombre}}</li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </ul>
+        <br>
+        <button><a href="create/{{p.id}}">Agregar Especificaciones unicas</a></button>
+    </details>
     {% endfor %}
-</ul>
 {% endblock %}
