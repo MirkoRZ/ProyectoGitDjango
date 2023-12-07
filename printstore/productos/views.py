@@ -32,10 +32,13 @@ def create_producto(request):
                 ProductoForm(productoDTO).save(commit=False) #Para que no lo guarde directamente
                 nuevo_producto = ProductoForm(productoDTO).save()
                 producto_id = nuevo_producto.id
-                print(Producto.objects.all())
-                print(Especificacion.objects.all())
-
-                return redirect(f'/productos/create/{producto_id}') #Aniadir Especificacion
+                if request.POST['espAceptar'] == "no":
+                    ProductoEspecificacion.objects.create(fk_id_producto=nuevo_producto,fk_id_especificacion=None)
+                    return redirect("/productos")
+                else:
+                    print(Producto.objects.all())
+                    print(Especificacion.objects.all())
+                    return redirect(f'/productos/create/{producto_id}') #Aniadir Especificacion
         except Exception as ex:
             return render(request,'create_producto.html',{
                 'formCreateProducto':ProductoForm,
@@ -44,18 +47,27 @@ def create_producto(request):
 
 def create_especificacion(request,producto_id):
     productoActual = Producto.objects.get(id=producto_id)
-    especificaciones = Especificacion.objects.all()
+    prodEspecificaciones = ProductoEspecificacion.objects.filter(fk_id_producto=producto_id).values_list('fk_id_especificacion', flat=True)
+    especificaciones = Especificacion.objects.filter(id__in=prodEspecificaciones)
     if request.method == 'GET':
+        print(f"ID_PRODUCTO_ESPECIFICACION:{prodEspecificaciones.count()}")
         return render(request,'create_especificacion.html',{
             'formCreateEspecificacion':EspecificacionForm,
             'producto':productoActual,
             'especificaciones':especificaciones})
     else:
+        prodEsp = ProductoEspecificacion.objects.filter(fk_id_producto=producto_id).first()
         nueva_especificacion=EspecificacionForm(request.POST).save()
         if request.POST['tipo_valor']=='booleano':
             OpcionEspecificacion.objects.create(fk_id_opcion=Opcion.objects.get(id=1),fk_id_especificacion=nueva_especificacion)
             OpcionEspecificacion.objects.create(fk_id_opcion=Opcion.objects.get(id=2),fk_id_especificacion=nueva_especificacion)
-        nuevo_producto_especificacion=ProductoEspecificacion.objects.create(fk_id_producto=productoActual,fk_id_especificacion=nueva_especificacion)
+
+        if prodEspecificaciones.count() == 1 and (prodEsp and not prodEsp.fk_id_especificacion):            
+            prodEsp.fk_id_especificacion = nueva_especificacion
+            prodEsp.save(update_fields=['fk_id_especificacion'])
+        else:
+            ProductoEspecificacion.objects.create(fk_id_producto=productoActual,fk_id_especificacion=nueva_especificacion)
+
         return render(request,'create_especificacion.html',{'formCreateEspecificacion':EspecificacionForm,
                                                             'producto':productoActual,
                                                             'especificaciones':especificaciones})
@@ -112,7 +124,14 @@ def create_opcion_numerica(request,producto_id,especificacion_id):
                 if opNumEsp is None:
                     OpcionNumericaEspecificacion.objects.create(fk_id_opcion_numerica=nueva_opcion,fk_id_especificacion=especificacionActual)
                 else:
-                    opNumEsp.fk_id_opcion_numerica = nueva_opcion
+                    opNumEsp.fk_id_opcion_numerica = nueva_opcion if nueva_opcion else None
+                    opNumEsp.save()
+                return render(request,'create_opcion.html',{
+                    'formCreateOpcionNumerica':OpcionNumericaForm,
+                    'especificacion':especificacionActual,
+                    'id_producto':producto_id,
+                    'opcionNum':opNumEsp,
+                    'numeros':numeros})
 
             elif repetido:
                 opNumEncontrada = OpcionNumerica.objects.filter(valor_minimo=valor_minimo, valor_maximo=valor_maximo, intervalo=intervalo).first()
