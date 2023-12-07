@@ -87,7 +87,10 @@ def create_opcion(request,producto_id,especificacion_id):
         if not(request.POST['nombre'] is None or request.POST['valor'] is None):
             nueva_opcion = OpcionForm(request.POST).save()        
             OpcionEspecificacion.objects.create(fk_id_opcion=nueva_opcion,fk_id_especificacion=especificacionActual)
-
+            
+        especificacionActual = Especificacion.objects.get(id=especificacion_id)
+        lstOpcionesEsp = list(OpcionEspecificacion.objects.filter(fk_id_especificacion=especificacionActual.id).values_list('fk_id_opcion', flat=True))
+        opciones = Opcion.objects.filter(id__in=lstOpcionesEsp)
         return render(request,'create_opcion.html',{
             'formCreateOpcion':OpcionForm,
             'especificacion':especificacionActual,
@@ -101,8 +104,8 @@ def create_opcion_numerica(request,producto_id,especificacion_id):
     try:
         opcionEspecificacion = OpcionNumericaEspecificacion.objects.filter(fk_id_especificacion = especificacion_id).values_list('fk_id_opcion_numerica', flat=True)
         print(opcionEspecificacion)
-        opciones = OpcionNumerica.objects.get(id = opcionEspecificacion[0]) if opcionEspecificacion else None
-        numeros = list(range(opciones.valor_minimo, opciones.valor_maximo + 1,opciones.intervalo))
+        opciones = OpcionNumerica.objects.get(id = opcionEspecificacion[0]) if opcionEspecificacion and opcionEspecificacion[0] else None
+        numeros = list(range(opciones.valor_minimo, opciones.valor_maximo + 1, opciones.intervalo)) if opciones else []
 
         if request.method == 'GET':
             return render(request,'create_opcion.html',{
@@ -119,6 +122,7 @@ def create_opcion_numerica(request,producto_id,especificacion_id):
             negativos = valor_minimo < 1 or valor_maximo < 1 or intervalo < 1
             intervaloCorrecto= intervalo<(valor_maximo-valor_minimo) and  (valor_maximo-valor_minimo)%intervalo==0
             repetido = bool(OpcionNumerica.objects.filter(valor_minimo=valor_minimo, valor_maximo=valor_maximo, intervalo=intervalo).count() > 0)
+            numeros = list(range(opciones.valor_minimo, opciones.valor_maximo + 1, opciones.intervalo)) if opciones else []
             if not(negativos or repetido):
                 nueva_opcion = OpcionNumericaForm(request.POST).save()        
                 if opNumEsp is None:
@@ -132,9 +136,9 @@ def create_opcion_numerica(request,producto_id,especificacion_id):
                     'id_producto':producto_id,
                     'opcionNum':opNumEsp,
                     'numeros':numeros})
-
             elif repetido:
                 opNumEncontrada = OpcionNumerica.objects.filter(valor_minimo=valor_minimo, valor_maximo=valor_maximo, intervalo=intervalo).first()
+                numeros = list(range(opciones.valor_minimo, opciones.valor_maximo + 1, opciones.intervalo)) if opciones else []
                 if not(opNumEsp is None):
                     opNumEsp = OpcionNumericaEspecificacion.objects.get(id=opNumEsp.id)
                     opNumEsp.fk_id_opcion_numerica = opNumEncontrada if opNumEncontrada else None
@@ -145,7 +149,6 @@ def create_opcion_numerica(request,producto_id,especificacion_id):
                     'id_producto':producto_id,
                     'opcionNum':opNumEncontrada,
                     'numeros':numeros})
-
             elif not(intervaloCorrecto):
                 return render(request,'create_opcion.html',{
                 'formCreateOpcionNumerica':OpcionNumericaForm,
