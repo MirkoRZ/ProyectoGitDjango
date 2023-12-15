@@ -2,7 +2,7 @@
 {% block content %}
 <h1>PRODUCTOS</h1>
 <h3>Fecha actual: {{fecha}}</h3>
-<button><a href="/productos/create">Registrar Producto</a></button>
+<p><a class="btn btn-success" href="/productos/create">Registrar Producto</a></p>
     {% for p in productos %}
     <details>
         <summary>{{p.nombre}}</summary>
@@ -18,8 +18,7 @@
                 {% endif %}
             {% endfor %}
         </ul>
-        <br>
-        <button><a href="create/{{p.id}}">Agregar Especificaciones unicas</a></button>
+        <p><a class="btn btn-primary" href="create/{{p.id}}">Agregar Especificaciones unicas</a></p>
     </details>
     {% endfor %}
 {% endblock %}

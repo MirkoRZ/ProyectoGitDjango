@@ -6,20 +6,42 @@
     {% csrf_token %}
     {{formCreateEspecificacion.as_p}}
     <br>
-    <button>Registrar Especificacion</button>
-    <ul>
+    <button class="btn btn-success">Registrar Especificacion</button>
+    <table class="table">
+        <thead>
+            <tr>
+              <th>Especificacion</th>
+              <th>Accion</th>
+            </tr>
+        </thead>
         {% for e in especificaciones %}
-            {% if e.tipo_valor == "booleano" %}
-                <li>{{e.nombre}}-{{e.tipo_valor}}</li>
-            {% elif e.tipo_valor == "string" %}
-                <li>{{e.nombre}}-{{e.tipo_valor}} <button><a href="{{producto.id}}/especificacion/{{e.id}}">Agregar opciones!</a></button></li>
-            {% else %}
-                <li>{{e.nombre}}-{{e.tipo_valor}} <button><a href="{{producto.id}}/especificacion-numerica/{{e.id}}">Asignar intervalo de opciones!</a></button></li>
+            <tr>
+                <td>{{e.nombre}}-{{e.tipo_valor}}</td>
+                {% if e.tipo_valor == "string" %}
+                    <td><a class="btn btn-primary" href="{{producto.id}}/especificacion/{{e.id}}">Agregar opciones!</a></td>
+                {% elif e.tipo_valor == "int" %}
+                    <td><a class="btn btn-primary" href="{{producto.id}}/especificacion-numerica/{{e.id}}">Asignar intervalo de opciones!</a></td>
+            </tr>
         {% endif %}
 
        
         {% endfor %}
-    </ul>
-    <button><a href="/productos">Cancelar</a></button>
+    </table>
+    <p><a class="btn btn-danger" href="/productos">Back</a></p>
 </form>
+<script>
+    function validarInput(event) {
+        // Expresión regular que permite solo letras
+        var regex = /^[A-Za-z]+$/;
+
+        // Obtener el valor ingresado en el input
+        var valorInput = event.target.value;
+
+        // Validar si el valor cumple con la expresión regular
+        if (!regex.test(valorInput)) {
+            // Si no cumple, prevenir la entrada del carácter
+            event.preventDefault();
+        }
+    }
+</script>
 {% endblock %}

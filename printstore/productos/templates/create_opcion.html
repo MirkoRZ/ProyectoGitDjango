@@ -7,7 +7,7 @@
         {% csrf_token %}
         {{formCreateOpcion.as_p}}
         <br>
-        <button>Registrar opcion</button>
+        <button class="btn btn-success">Registrar opcion</button>
         <ul>
             {% for o in opciones %}
             
@@ -32,8 +32,8 @@
                 </ul>
             {% endif %}
         {% endif %}
-        <button>Registrar intervalo de opciones</button><br><br>
+        <button class="btn btn-success">Registrar intervalo de opciones</button><br><br>
     </form>
 {% endif %}
-<button><a href="/productos/create/{{id_producto}}">Back</a></button>
+<p><a class="btn btn-danger" href="/productos/create/{{id_producto}}">Back</a></p>
 {% endblock %}

@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from productos import views
+from ordenes import views as orderViews
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,5 +29,7 @@ urlpatterns = [
     path('productos/create/',views.create_producto,name="create_producto"),
     path('productos/create/<int:producto_id>',views.create_especificacion,name="create_especificacion"),
     path('productos/create/<int:producto_id>/especificacion/<int:especificacion_id>',views.create_opcion,name="create_opcion"),
-    path('productos/create/<int:producto_id>/especificacion-numerica/<int:especificacion_id>',views.create_opcion_numerica,name="create_opcion_numerica")
+    path('productos/create/<int:producto_id>/especificacion-numerica/<int:especificacion_id>',views.create_opcion_numerica,name="create_opcion_numerica"),
+    path('ordenes/',orderViews.Ordenes),
+    path('ordenes/create',orderViews.Create_orden,name="Create_orden")
 ]

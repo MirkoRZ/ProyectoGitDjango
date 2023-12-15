@@ -9,6 +9,7 @@ from .forms import *
 from .models import *
 from django.core.serializers import serialize
 from django.http import JsonResponse
+import re
 
 # Create your views here.
 def Home(request):
@@ -47,6 +48,7 @@ def create_producto(request):
 
 def create_especificacion(request,producto_id):
     productoActual = Producto.objects.get(id=producto_id)
+    #Todas las especificaciones de un producto (ProductoEspecificacion)
     prodEspecificaciones = ProductoEspecificacion.objects.filter(fk_id_producto=producto_id).values_list('fk_id_especificacion', flat=True)
     especificaciones = Especificacion.objects.filter(id__in=prodEspecificaciones)
     if request.method == 'GET':
@@ -58,10 +60,19 @@ def create_especificacion(request,producto_id):
     else:
         prodEsp = ProductoEspecificacion.objects.filter(fk_id_producto=producto_id).first()
         nueva_especificacion=EspecificacionForm(request.POST).save()
-        if request.POST['tipo_valor']=='booleano':
+        formCompleto = request.POST['nombre'] != None or request.POST['tipo_valor'] != None
+
+        if not(formCompleto):
+            return render(request,'create_especificacion.html',{'formCreateEspecificacion':EspecificacionForm,
+                                                            'producto':productoActual,
+                                                            'especificaciones':especificaciones,
+                                                            'error':"No puedes dejar nulos"})
+
+        if formCompleto and request.POST['tipo_valor']=='booleano':
             OpcionEspecificacion.objects.create(fk_id_opcion=Opcion.objects.get(id=1),fk_id_especificacion=nueva_especificacion)
             OpcionEspecificacion.objects.create(fk_id_opcion=Opcion.objects.get(id=2),fk_id_especificacion=nueva_especificacion)
 
+        #Si solo hay un id de ProductoEspecificación y no tiene 
         if prodEspecificaciones.count() == 1 and (prodEsp and not prodEsp.fk_id_especificacion):            
             prodEsp.fk_id_especificacion = nueva_especificacion
             prodEsp.save(update_fields=['fk_id_especificacion'])
@@ -76,6 +87,9 @@ def create_opcion(request,producto_id,especificacion_id):
     especificacionActual = Especificacion.objects.get(id=especificacion_id)
     lstOpcionesEsp = list(OpcionEspecificacion.objects.filter(fk_id_especificacion=especificacionActual.id).values_list('fk_id_opcion', flat=True))
     opciones = Opcion.objects.filter(id__in=lstOpcionesEsp)
+    opcionesBusqueda=Opcion.objects.filter(opcionespecificacion__fk_id_especificacion=especificacion_id)
+    for opcion in opcionesBusqueda:
+        print(f"{opcion.nombre}:{opcion.valor}")
 
     if request.method == 'GET':
         return render(request,'create_opcion.html',{
@@ -84,9 +98,19 @@ def create_opcion(request,producto_id,especificacion_id):
             'id_producto':producto_id,
             'opciones':opciones})
     else:
-        if not(request.POST['nombre'] is None or request.POST['valor'] is None):
-            nueva_opcion = OpcionForm(request.POST).save()        
+        if not(request.POST['nombre'] is None or request.POST['valor'] is None) and opcionesBusqueda.filter(valor=request.POST['valor']).first():
+            nombreOpcion = re.sub(r'[^A-Za-z0-9 ]+', '',request.POST['nombre'])
+            objOpcion = {'nombre':nombreOpcion,'valor':request.POST['valor']}
+            print(nombreOpcion)
+            nueva_opcion = OpcionForm(objOpcion).save()        
             OpcionEspecificacion.objects.create(fk_id_opcion=nueva_opcion,fk_id_especificacion=especificacionActual)
+        else:
+            return render(request,'create_opcion.html',{
+            'formCreateOpcion':OpcionForm,
+            'especificacion':especificacionActual,
+            'id_producto':producto_id,
+            'opciones':opciones,
+            'error':"Ingreso nulos o el valor \nasignado a esta especificación está repetido"})
             
         especificacionActual = Especificacion.objects.get(id=especificacion_id)
         lstOpcionesEsp = list(OpcionEspecificacion.objects.filter(fk_id_especificacion=especificacionActual.id).values_list('fk_id_opcion', flat=True))

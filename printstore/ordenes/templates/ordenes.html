@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>ORDENES</h1>
+<h2>Productos a escoger</h2>
+<button onclick="openFormDetalles()">Ordenar!</button>
+<dialog id="DetalleOrden" style="width: 90vw; text-align: center;"></dialog>
+<div id="cestaCompras"></div>
+<div>
+    {% for p in productos %}
+        <details id="details{{p.id}}">
+            <summary style="font-weight: bold;"><dfn>{{p.nombre}}</dfn></summary>
+            <div>
+                <dd>{{p.descripcion}}</dd>
+            </div>
+            <br>
+            &emsp;<button class="aniadir-producto" data-id-producto = '{{p.id}}'>Aniadir</button>
+        </details>
+    {% endfor %}
+</div>
+
+<script>
+    function openTab(tabId) {
+        var tabs = document.getElementsByClassName('tab');
+        for (var i = 0; i < tabs.length; i++) {
+            tabs[i].classList.remove('active');
+        }
+
+        document.getElementById(tabId).classList.add('active');
+    };
+    let cestaCompras = [];
+
+    let listaEspecificaciones = {{especificacionesSerializados|safe}}
+    const convertirJSONStringsAObjetos = (array) => {
+            return array.map(item => {
+                return {
+                    id_producto: item.id_producto,
+                    especificacionesLST: item.especificacionesLST.map(jsonString => JSON.parse(jsonString))
+                };
+            });
+        };
+    listaEspecificaciones = convertirJSONStringsAObjetos(listaEspecificaciones);
+
+    let listaOpciones = {{opcionesSerializados|safe}};
+    let listaOpcionesNumericas = {{opcionesNumericasSerializados|safe}};
+
+    listaOpciones = listaOpciones.map(item => {
+                return {
+                    id_especificacion: item.id_especificacion,
+                    opciones: item.opciones.map(jsonString => JSON.parse(jsonString))
+                };
+            });
+
+    listaOpcionesNumericas = listaOpcionesNumericas.map(item => {
+                return {
+                    id_especificacion: item.id_especificacion,
+                    opciones_numericas: item.opciones_numericas.map(jsonString => JSON.parse(jsonString))
+                };
+            }).filter(x=>x.opciones_numericas.length>=1);
+
+    function openFormDetalles(){    
+        console.log(listaEspecificaciones);    
+        console.log(listaOpciones);    
+        console.log(listaOpcionesNumericas);    
+        htmlDetalles=`
+        ${cestaCompras.length>0 ? '' : 'No hay productos seleccionados'}
+        <form method="POST" action="/ordenes/create" >
+        {% csrf_token %}
+        <div id="tabs-container">
+            ${cestaCompras.map(p1 => `<a href="javascript:void(0);" class="tab-link" onclick="openTab('ptab_${p1.pk}')">${p1.fields.nombre}</a>`).join('')}
+            ${cestaCompras.map(p2 => `
+                <div id="ptab_${p2.pk}" class="tab">
+                    <br>
+                    <h3>Detalles de ${p2.fields.nombre}</h3>
+                    <div class="row">
+                        <div class="col">
+                        <p><label type="text" for="id_cantidad_${p2.pk}">cantidad de ejemplares:</label></p>
+                        <p><input type="number" step="1" id="id_cantidad_${p2.pk}" name="id_cantidad_${p2.pk}" ></p>                                        
+                        <p><label for="id_colores_${p2.pk}"}">Colores de Impresión:</label></p>
+                        <p><select name="id_colores_${p2.pk}"" id="id_colores_${p2.pk}"" required>
+                            {% for value, label in detalleOrdenForm.colores_impresion.field.choices %}
+                                <option value="{{ value }}" {% if value == detalleOrdenForm.colores_impresion.value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select></p>
+                        
+                        <label for="{{ detalleOrdenForm.ancho.id_for_label }}_${p2.pk}">Ancho (mm):</label>
+                        <p><input type="number" step="0.01" id="{{ detalleOrdenForm.ancho.id_for_label }}_${p2.pk}" name="{{ detalleOrdenForm.ancho.id_for_label }}_${p2.pk}" ></p>  
+                        
+                        <label for="{{ detalleOrdenForm.largo.id_for_label }}_${p2.pk}">Largo (mm):</label>
+                        <p><input type="number" step="0.01" id="{{ detalleOrdenForm.largo.id_for_label }}_${p2.pk}" name="{{ detalleOrdenForm.largo.id_for_label }}_${p2.pk}" ></p> 
+                    </div> 
+                    <div class="col">
+                        ${listaEspecificaciones.find(x=>x.id_producto===p2.pk)? 
+                            listaEspecificaciones.find(x=>x.id_producto===p2.pk).especificacionesLST.map(pesp => {
+                                let attr = `<p> ${pesp[0].fields.nombre}: </p>`;
+                                
+                                let inputs = pesp[0].fields.tipo_valor === 'int'? 
+                                            listaOpcionesNumericas.find(on =>on.id_especificacion === pesp[0].pk) :
+                                            listaOpciones.find(o =>o.id_especificacion === pesp[0].pk);
+                                console.log(inputs);
+
+                                let nameInput = `${p2.fields.nombre.replace(/[^a-z0-9,. ]/gi, '')}_${p2.pk}_${pesp[0].pk}`;
+                                // name de cada  select será nomrbeProducto_idespecificacion
+                                let input =  pesp[0].fields.tipo_valor === 'int'?  `
+                                <p><select name="${nameInput}" id="${nameInput}" width="100%"> 
+                                    <option value="0">0</option>
+                                    ${Array.from(
+                                        {
+                                            length:(inputs['opciones_numericas'][0][0]['fields'].valor_maximo-inputs['opciones_numericas'][0][0]['fields'].valor_minimo)/inputs['opciones_numericas'][0][0]['fields'].intervalo + 1
+                                        }, 
+                                        (_, i) => inputs['opciones_numericas'][0][0]['fields'].valor_minimo + i * inputs['opciones_numericas'][0][0]['fields'].intervalo
+                                        ).map(opnum => `<option value="${opnum}">${opnum}</option>`)
+                                    }
+                                </select></p>` 
+                                : `
+                                <p><select name="${nameInput}" id="${nameInput}" width="100%"> 
+                                    ${
+                                        inputs['opciones'].map(op=>`<option value="${op[0].fields.valor}">${op[0].fields.nombre}</option>`)
+                                    }
+                                </select></p>` ;
+
+                                attr += input;
+                                return attr
+                            }).join('')
+                            :''}
+                        </div> 
+                    </div>
+                </div>`).join('')}
+        </div>
+        <br>
+            ${cestaCompras.length>0 ? '<button class="btn btn-success" onclick="registrarOrden(event)">Registrar</button>&emsp;':''}<button class="btn btn-danger" onclick="cerrarDetalleOrden(event)">Cerrar</button>
+        </form>`;
+        const modal = document.getElementById("DetalleOrden");
+        modal.innerHTML = htmlDetalles;
+        modal.showModal();
+    }
+
+    function cerrarDetalleOrden(event) {
+        event.preventDefault();
+        document.getElementById("DetalleOrden").close();
+    }
+
+    function registrarOrden(event){
+        event.preventDefault();
+        let entradas = [];
+        let CSRFToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        cestaCompras.map(x=> x.pk).forEach(p=>{
+            let selects = document.querySelectorAll(`#ptab_${p} select`);
+            let inputs = document.querySelectorAll(`#ptab_${p} input`);
+            selects.forEach(e=>{
+                entradas.push({'name':e.getAttribute('name'),'id':e.getAttribute('id'),'type':e.getAttribute('type'),'value':e.value});
+            });
+            inputs.forEach(e=>{
+                entradas.push({'name':e.getAttribute('name'),'id':e.getAttribute('id'),'type':e.getAttribute('type'),'value':e.value});
+            });
+            console.log(entradas);
+        });
+        data = {'array_id_productos':cestaCompras.map(x=> x.pk),'data':entradas}
+        fetch("{% url 'Create_orden' %}",{
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            'X-CSRFToken': CSRFToken
+            },
+            body:JSON.stringify(data)
+        }).catch(error => console.error('Error en la solicitud fetch:', error));
+    }
+
+    //con este query selector, selecciono todos los que tengan la clase 'aniadir-producto' que son los botones
+    document.querySelectorAll('.aniadir-producto').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const cestaHTML = document.getElementById('cestaCompras');
+
+            let productos={{productosSerializados|safe}};
+
+            var itemId = parseInt(this.getAttribute('data-id-producto'));
+            
+            var elementoDetails = document.getElementById('details' + itemId);
+            
+            elementoDetails.style.backgroundColor = this.innerText==='Aniadir' ? '#6AFF63' : '';
+
+            this.innerText= this.innerText==='Aniadir' ? 'Quitar' : 'Aniadir';
+
+            let productoActual = productos.find(x=> x.pk === itemId);
+            
+            if(!cestaCompras.find(x=>x.pk === productoActual.pk)){
+                cestaCompras.push(productoActual);
+            }else{
+                let indexDelete = cestaCompras.findIndex(x=>x.pk === productoActual.pk)
+                cestaCompras.splice(indexDelete,1);
+            };
+
+            cestaHTML.innerHTML='<p>['+ cestaCompras.map(e=>e.fields.nombre) +']</p>';
+            console.log(cestaCompras);
+        });
+    });
+</script>
+{% endblock %}
