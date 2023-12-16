@@ -42,6 +42,7 @@ def Ordenes(request):
 
         productosEspecificaciones.append(objProductoEspecificacion)
     return render(request,'ordenes.html',{'productos':productosLST,
+                                          'ordenes':ordenesLST,
                                           'detalleOrdenForm':DetalleOrdenForm,
                                           'productosSerializados':productosJSON,
                                           'especificacionesSerializados':productosEspecificaciones,

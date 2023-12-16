@@ -2,10 +2,13 @@
 {% block content %}
 <h1>ORDENES</h1>
 <h2>Productos a escoger</h2>
-<button onclick="openFormDetalles()">Ordenar!</button>
+<button class="btn btn-success" onclick="openFormDetalles()">Ordenar!</button>
+<br>
+<br>
 <dialog id="DetalleOrden" style="width: 90vw; text-align: center;"></dialog>
 <div id="cestaCompras"></div>
-<div>
+{% comment %} <button data-bs-toggle="collapse" data-bs-target="#div_productos">Productos</button>
+<div id="div_productos" class="collapse">
     {% for p in productos %}
         <details id="details{{p.id}}">
             <summary style="font-weight: bold;"><dfn>{{p.nombre}}</dfn></summary>
@@ -16,8 +19,29 @@
             &emsp;<button class="aniadir-producto" data-id-producto = '{{p.id}}'>Aniadir</button>
         </details>
     {% endfor %}
+</div> {% endcomment %}
+<div class="accordion" id="accordionProductos">
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingProductos">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#div_productos" aria-expanded="true" aria-controls="div_productos">
+        Productos (Click to open)
+      </button>
+    </h2>
+    <div id="div_productos" class="accordion-collapse collapse" aria-labelledby="headingProductos" data-bs-parent="#accordionProductos">
+      <div class="accordion-body">
+        {% for p in productos %}
+            <details id="details{{p.id}}">
+                <summary style="font-weight: bold;"><dfn>{{p.nombre}}</dfn></summary>
+                <div>
+                    <dd>{{p.descripcion}}</dd>
+                </div>
+                &emsp;<button class="btn btn-success aniadir-producto" data-id-producto = '{{p.id}}'>Aniadir</button>
+            </details>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </div>
-
 <script>
     function openTab(tabId) {
         var tabs = document.getElementsByClassName('tab');
@@ -71,6 +95,7 @@
             ${cestaCompras.map(p1 => `<a href="javascript:void(0);" class="tab-link" onclick="openTab('ptab_${p1.pk}')">${p1.fields.nombre}</a>`).join('')}
             ${cestaCompras.length>0 ? `
                 <div id="client_data" class="tab">
+                    <br>
                     <h3>Detalles de cliente</h3>
                     <p><label type="text" for="nombre_cliente">Nombre del cliente:</label></p>
                     <p><input type="text" id="nombre_cliente" name="nombre_cliente"></p> 
@@ -194,9 +219,16 @@
             
             var elementoDetails = document.getElementById('details' + itemId);
             
-            elementoDetails.style.backgroundColor = this.innerText==='Aniadir' ? '#6AFF63' : '';
+            elementoDetails.style.backgroundColor = this.innerText==='Aniadir' ? '#83FFC1' : '';
 
             this.innerText= this.innerText==='Aniadir' ? 'Quitar' : 'Aniadir';
+            if (this.innerText === 'Aniadir'){
+                this.classList.remove("btn-danger");
+                this.classList.add("btn-success");
+            }else{
+                this.classList.add("btn-danger");
+                this.classList.remove("btn-success");
+            }
 
             let productoActual = productos.find(x=> x.pk === itemId);
             
