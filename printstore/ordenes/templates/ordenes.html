@@ -157,7 +157,7 @@
         let entradas = [];
         let CSRFToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
-        var inputsCliente = document.querySelectorAll('client_data input');
+        var inputsCliente = document.querySelectorAll('#client_data input');
         inputsCliente.forEach(e=>{
                 entradas.push({'name':e.getAttribute('name'),'id':e.getAttribute('id'),'type':e.getAttribute('type'),'value':e.value});
             });
@@ -170,7 +170,7 @@
             inputs.forEach(e=>{
                 entradas.push({'name':e.getAttribute('name'),'id':e.getAttribute('id'),'type':e.getAttribute('type'),'value':e.value});
             });
-            console.log(entradas);
+            console.log("entradas:",entradas);
         });
         data = {'array_id_productos':cestaCompras.map(x=> x.pk),'data':entradas}
         fetch("{% url 'Create_orden' %}",{
