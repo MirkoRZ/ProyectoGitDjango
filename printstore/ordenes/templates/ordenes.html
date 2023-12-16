@@ -66,7 +66,20 @@
         <form method="POST" action="/ordenes/create" >
         {% csrf_token %}
         <div id="tabs-container">
+            ${cestaCompras.length>0 ? `
+                <a href="javascript:void(0);" class="tab-link" onclick="openTab('client_data')">Datos del cliente</a>` :''}
             ${cestaCompras.map(p1 => `<a href="javascript:void(0);" class="tab-link" onclick="openTab('ptab_${p1.pk}')">${p1.fields.nombre}</a>`).join('')}
+            ${cestaCompras.length>0 ? `
+                <div id="client_data" class="tab">
+                    <h3>Detalles de cliente</h3>
+                    <p><label type="text" for="nombre_cliente">Nombre del cliente:</label></p>
+                    <p><input type="text" id="nombre_cliente" name="nombre_cliente"></p> 
+                    <p><label type="text" for="apellido_cliente">Apellido del cliente:</label></p>
+                    <p><input type="text" id="apellido_cliente" name="apellido_cliente"></p> 
+                    <p><label type="text" for="dni_cliente">DNI del cliente:</label></p>
+                    <p><input type="number" id="dni_cliente" name="dni_cliente"></p> 
+                </div>
+            `: ''}
             ${cestaCompras.map(p2 => `
                 <div id="ptab_${p2.pk}" class="tab">
                     <br>
@@ -143,6 +156,11 @@
         event.preventDefault();
         let entradas = [];
         let CSRFToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        var inputsCliente = document.querySelectorAll('client_data input');
+        inputsCliente.forEach(e=>{
+                entradas.push({'name':e.getAttribute('name'),'id':e.getAttribute('id'),'type':e.getAttribute('type'),'value':e.value});
+            });
         cestaCompras.map(x=> x.pk).forEach(p=>{
             let selects = document.querySelectorAll(`#ptab_${p} select`);
             let inputs = document.querySelectorAll(`#ptab_${p} input`);

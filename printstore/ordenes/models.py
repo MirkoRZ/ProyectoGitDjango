@@ -13,11 +13,11 @@ class Orden(models.Model):
     fecha_entrega = models.DateTimeField(null=True)
 
 class DetalleOrden(models.Model):
-    COLORES_IMPRESION = [('4+4',"A colores en ambos lados"),
-                         ('4+1',"A color al frente, reverson B/N"),
+    COLORES_IMPRESION = [('4+4',"A color en ambos lados"),
+                         ('4+1',"A color al frente, reverso B/N"),
                          ('4+0',"A color al frente, nada al reverso"),
-                         ('1+1',"A blanco y negro ambos lados"),
-                         ('1+0',"A blanco y negro al frente, nada al reverso")]
+                         ('1+1',"B/N ambos lados"),
+                         ('1+0',"B/N al frente, nada al reverso")]
     fk_id_orden = models.ForeignKey(Orden,on_delete=models.CASCADE)
     cantidad_ejemplares = models.IntegerField()
     colores_impresion = models.CharField(max_length=200,choices=COLORES_IMPRESION)

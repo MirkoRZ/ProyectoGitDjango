@@ -51,17 +51,33 @@ def Ordenes(request):
 def Create_orden(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        defaultDatas = []
+        defaultDatas = [] #DetalleOrdem
+        uniqueDatas = [] #ProductoEspecificacion
         for id in data['array_id_productos']:
             print(id)
             for data in data['data']:
-                objDefaultData = {'id':"",'valor':''}
+                objDefaultData = {'id_producto':0,'nombre_attr':"",'valor':''}
+                objUniqueAttr = {'id_producto':0,'id_especificacion':0,'valor_seleccionado':"",'tipo_dato':""}
+                print(data)
                 if str(data['id']).split('_')[0] == 'id' and int(str(data['id']).split('_')[len(str(data['id']).split('_'))-1]) == id:
-                    objDefaultData['id']=data['id']
+                    objDefaultData['id_producto']=int(str(data['id']).split('_')[len(str(data['id']).split('_'))-1])
+                    objDefaultData['nombre_attr']=str(str(data['id']).split('_')[1])
                     objDefaultData['valor']=float(data['value']) if (data['type']=="number") else data['value']
                     defaultDatas.append(objDefaultData)
-                print(f"{data['id']}-{data['value']}-{data['type']}")
+                else:
+                    objUniqueAttr['id_producto']=int(str(data['id']).split('_')[len(str(data['id']).split('_'))-2])
+                    objUniqueAttr['id_especificacion']=int(str(data['id']).split('_')[len(str(data['id']).split('_'))-1])
+                    especificacionActual = Especificacion.objects.get(id=int(str(data['id']).split('_')[len(str(data['id']).split('_'))-1]))
+                    objUniqueAttr['tipo_dato'] = especificacionActual.tipo_valor
+                    if (especificacionActual.tipo_valor=="int" or especificacionActual.tipo_valor=="booleano"):
+                        objUniqueAttr['valor_seleccionado']=int(data['value']) 
+                    else:
+                        objUniqueAttr['valor_seleccionado']=str(data['value'])
+                    uniqueDatas.append(objUniqueAttr)        
+        print("Default data".center(50,'-'))
         print(defaultDatas)
+        print("Unique data".center(50,'-'))
+        print(uniqueDatas)
         return HttpResponse(json.dumps(data))
     else:
         return HttpResponse('Invalid request method')
