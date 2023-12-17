@@ -7,19 +7,50 @@
 <br>
 <dialog id="DetalleOrden" style="width: 90vw; text-align: center;"></dialog>
 <div id="cestaCompras"></div>
-{% comment %} <button data-bs-toggle="collapse" data-bs-target="#div_productos">Productos</button>
-<div id="div_productos" class="collapse">
-    {% for p in productos %}
-        <details id="details{{p.id}}">
-            <summary style="font-weight: bold;"><dfn>{{p.nombre}}</dfn></summary>
-            <div>
-                <dd>{{p.descripcion}}</dd>
-            </div>
-            <br>
-            &emsp;<button class="aniadir-producto" data-id-producto = '{{p.id}}'>Aniadir</button>
-        </details>
-    {% endfor %}
-</div> {% endcomment %}
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">DNI</th>
+        <th scope="col">Nombre</th>
+        <th scope="col">Apellido</th>
+        <th scope="col">Fecha de creación</th>
+        <th scope="col">Productos solicitados</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for orden in ordenes %}
+        <tr>
+            <td>{{orden.dni_cliente}}</td>
+            <td>{{orden.nombre_cliente}}</td>
+            <td>{{orden.apellido_cliente}}</td>
+            <td>{{orden.creado}}</td>
+            <td>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Producto</th>
+                            <th scope="col">Cantidad de ejemplares</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detalle in orden.detalleorden_set.all %}
+                            <tr>
+                                <td>
+                                    {% if detalle.detalleordenproductoespecificacion_set.all.count > 0 %}
+                                        {{detalle.detalleordenproductoespecificacion_set.first.fk_id_producto_especificacion.fk_id_producto.nombre}}
+                                    {% endif %}
+                                </td>
+                                <td>{{ detalle.cantidad_ejemplares }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 <div class="accordion" id="accordionProductos">
 <div class="accordion-item">
     <h2 class="accordion-header" id="headingProductos">
@@ -98,9 +129,9 @@
                     <br>
                     <h3>Detalles de cliente</h3>
                     <p><label type="text" for="nombre_cliente">Nombre del cliente:</label></p>
-                    <p><input type="text" id="nombre_cliente" name="nombre_cliente"></p> 
+                    <p><input type="text" pattern="[a-zA-Z]+" id="nombre_cliente" name="nombre_cliente"></p> 
                     <p><label type="text" for="apellido_cliente">Apellido del cliente:</label></p>
-                    <p><input type="text" id="apellido_cliente" name="apellido_cliente"></p> 
+                    <p><input type="text" pattern="[a-zA-Z]+" id="apellido_cliente" name="apellido_cliente"></p> 
                     <p><label type="text" for="dni_cliente">DNI del cliente:</label></p>
                     <p><input type="number" id="dni_cliente" name="dni_cliente"></p> 
                 </div>
@@ -205,6 +236,8 @@
             'X-CSRFToken': CSRFToken
             },
             body:JSON.stringify(data)
+        }).then(response => {
+            window.location.href = '/ordenes';
         }).catch(error => console.error('Error en la solicitud fetch:', error));
     }
 

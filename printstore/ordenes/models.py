@@ -26,6 +26,6 @@ class DetalleOrden(models.Model):
 
 class DetalleOrdenProductoEspecificacion(models.Model):
     fk_id_detalle_orden = models.ForeignKey(DetalleOrden,on_delete=models.CASCADE)
-    fk_id_producto_especificacion = models.ForeignKey(ProductoEspecificacion,on_delete=models.CASCADE)
+    fk_id_producto_especificacion = models.ForeignKey(ProductoEspecificacion,null=True, on_delete=models.SET_NULL)
     valor_seleccionado = models.IntegerField()
     
