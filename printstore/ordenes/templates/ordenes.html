@@ -14,7 +14,9 @@
         <th scope="col">Nombre</th>
         <th scope="col">Apellido</th>
         <th scope="col">Fecha de creación</th>
+        <th scope="col">Fecha entregado</th>
         <th scope="col">Productos solicitados</th>
+        <th scope="col">Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -24,13 +26,13 @@
             <td>{{orden.nombre_cliente}}</td>
             <td>{{orden.apellido_cliente}}</td>
             <td>{{orden.creado}}</td>
+            <td>{{orden.fecha_entrega}}</td>
             <td>
                 <table class="table">
                     <thead>
                         <tr>
                             <th scope="col">Producto</th>
                             <th scope="col">Cantidad de ejemplares</th>
-                            <th scope="col">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,6 +48,13 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </td>
+            <td>
+                {% if orden.fecha_entrega != None %}
+                    Ha sido Entregado
+                {% else %}
+                    <a class="btn btn-success" href="send/{{orden.id}}">Entregar</a>
+                {% endif %}
             </td>
         </tr>
       {% endfor %}
@@ -74,6 +83,37 @@
   </div>
 </div>
 <script>
+    {% comment %} function entregar(id_orden) {
+        let data={'id_orden': id_orden};
+        console.log(data);
+        console.log(getCookie('csrftoken'));
+        fetch(`{% url 'Send_orden' %}${id_orden}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+        })
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    } {% endcomment %}
     function openTab(tabId) {
         var tabs = document.getElementsByClassName('tab');
         for (var i = 0; i < tabs.length; i++) {

@@ -31,5 +31,6 @@ urlpatterns = [
     path('productos/create/<int:producto_id>/especificacion/<int:especificacion_id>',views.create_opcion,name="create_opcion"),
     path('productos/create/<int:producto_id>/especificacion-numerica/<int:especificacion_id>',views.create_opcion_numerica,name="create_opcion_numerica"),
     path('ordenes/',orderViews.Ordenes),
-    path('ordenes/create',orderViews.Create_orden,name="Create_orden")
+    path('ordenes/create',orderViews.Create_orden,name="Create_orden"),
+    path('ordenes/send/<int:id_orden>',orderViews.entregar_orden,name="Send_orden")
 ]

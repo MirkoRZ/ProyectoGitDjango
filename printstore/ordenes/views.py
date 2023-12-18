@@ -5,6 +5,7 @@ from .models import *
 from django.http import HttpResponse
 from .forms import *
 import json
+from datetime import datetime
 
 # Create your views here.
 def Ordenes(request):
@@ -131,6 +132,12 @@ def Create_orden(request):
         # print(defaultDatas)
         # print("Unique data".center(50,'-'))
         # print(uniqueDatas)
-        return redirect('/ordenes')
+        return redirect('/ordenes')          
     else:
         return HttpResponse('Invalid request method')
+
+def entregar_orden(request,id_orden):
+    ordenEncontrado = Orden.objects.get(id=id_orden)
+    ordenEncontrado.fecha_entrega = datetime.now()
+    ordenEncontrado.save()
+    return redirect('/ordenes')
